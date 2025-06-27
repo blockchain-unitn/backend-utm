@@ -1,1 +1,24 @@
-# backend-utm
+# Backend UTM
+
+A Node.js backend service that simulates requests from UTM (Unmanned Traffic Management) Service Providers to the SkyLedger Backend system.
+
+## Overview
+
+This backend service acts as a simulation layer for UTM Service Provider interactions with the SkyLedger platform. It provides a comprehensive testing environment for drone traffic management operations, in order to validate UTM integration workflows without requiring actual UTM provider connections.
+
+## Features
+
+- **UTM Request Simulation**: Mimics real-world UTM Service Provider API calls
+- **SkyLedger Integration**: Seamless communication with the SkyLedger Backend
+- **Traffic Management**: Simulates drone flight planning, authorization, and monitoring
+- **Testing Environment**: Comprehensive testing suite for UTM workflows
+
+## Use Cases
+
+- Development and testing of UTM integration flows
+- Validation of SkyLedger Backend responses
+- Simulation of various UTM scenarios and edge cases
+
+## Getting Started
+
+This service is part of the larger SkyLedger ecosystem and requires proper configuration to communicate with the main SkyLedger Backend service.
