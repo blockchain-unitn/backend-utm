@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added 
 - Added the CHANGELOG
+- Add drone, operator, and route interfaces with enums for types
 
 ### Changed
 - Changed the README content
