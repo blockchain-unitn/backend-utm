@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { ZoneType } from './enums';
 
 export interface RoutePoint {
@@ -9,7 +10,7 @@ export interface RoutePoint {
 
 /**
  * Represents a flight route for a drone with associated path points and zones.
- * 
+ *
  * @interface Route
  * @property {string} _id - Unique identifier for the route
  * @property {string} drone_id - Identifier of the drone assigned to this route
@@ -32,4 +33,25 @@ export interface RoutePointInput {
 export interface RouteInput {
   drone_id: string;
   path: RoutePointInput[];
+}
+
+export class Position {
+  @ApiProperty({ type: Number })
+  lat: number;
+  @ApiProperty({ type: Number })
+  lon: number;
+  @ApiProperty({ type: Number })
+  alt: number;
+}
+
+export interface Position {
+  lat: number;
+  lon: number;
+  alt: number;
+}
+
+export interface Location {
+  droneId: string;
+  timestamp: Date;
+  position: Position;
 }
