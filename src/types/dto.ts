@@ -2,13 +2,18 @@
 import { ApiBody, ApiProperty } from '@nestjs/swagger';
 import { Position } from './route';
 
+export enum PreAuthorizationStatus {
+  APPROVED,
+  FAILED,
+}
+
 export interface FlightPlan {
   route: Position[];
   start_time: Date;
   end_time: Date;
 }
 export class FlightPlan {
-  @ApiProperty( { type: [Position] })
+  @ApiProperty({ type: [Position] })
   route: Position[];
   @ApiProperty()
   start_time: Date;

@@ -22,3 +22,31 @@ This backend service acts as a simulation layer for UTM Service Provider interac
 ## Getting Started
 
 This service is part of the larger SkyLedger ecosystem and requires proper configuration to communicate with the main SkyLedger Backend service.
+
+## Running the Service
+
+1. **Clone the repository**:
+    ```bash
+    git clone https://github.com/your-org/backend-utm.git
+    cd backend-utm
+    ```
+
+2. **Install dependencies**:
+    ```bash
+    npm install
+    ```
+
+3. **Configure environment variables**:  
+    Copy `.env.orig` to `.env` and update the values as needed for your environment.
+
+4. **Start the service**:
+    ```bash
+    npm start
+    ```
+
+5. **Run tests (optional)**:
+    ```bash
+    npm test
+    ```
+
+The service will start and listen for simulated UTM requests as configured.

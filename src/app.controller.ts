@@ -37,7 +37,7 @@ export class AppController {
 
   @Post('addMockOperator')
   async addMockOperator(@Body() request: OperatorInput) {
-    return await this.appService.addMockOperator(request);
+    return await this.appService.addMockOperator();
   }
 
   @Get('mock_drones')

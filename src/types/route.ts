@@ -5,7 +5,7 @@ export interface RoutePoint {
   lat: number;
   lon: number;
   altitude: number;
-  timestamp: Date;
+  finished?: boolean; // Indicates if the route point has been reached
 }
 
 /**
@@ -19,9 +19,12 @@ export interface RoutePoint {
  */
 export interface Route {
   _id: string;
-  drone_id: string;
+  droneId: string;
   path: RoutePoint[];
-  zones: ZoneType[];
+  start_time: Date; // Start time of the route
+  end_time: Date; // End time of the route
+  finished: boolean; // Indicates if the route has been completed
+  zones: ZoneType[]; // Array of zones associated with this route
 }
 
 export interface RoutePointInput {

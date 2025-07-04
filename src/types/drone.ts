@@ -1,40 +1,49 @@
 import { ApiBody, ApiProperty } from '@nestjs/swagger';
 import { Day, ZoneType } from './enums';
 import { Operator } from './operator';
+export enum DroneType {
+  MEDICAL,
+  CARGO,
+  SURVEILLANCE,
+  AGRICULTURAL,
+  RECREATIONAL,
+  MAPPING,
+  MILITAR,
+}
 
-export class AuthorizedPeriod {
+export enum DroneStatus {
+  ACTIVE,
+  MAINTENANCE,
+  INACTIVE,
+}
+
+export class DroneInput {
   @ApiProperty()
-  days: Day[];
+  serialNumber: string;
   @ApiProperty()
-  from: Date;
+  model: string;
+  @ApiProperty({ enum: DroneType })
+  droneType: DroneType;
   @ApiProperty()
-  to: Date;
+  certHashes: string[];
+  @ApiProperty({ enum: ZoneType })
+  permittedZones: ZoneType[];
+  @ApiProperty()
+  operatorId: string;
+  @ApiProperty()
+  maintenanceHash: string;
+  @ApiProperty({ enum: DroneStatus })
+  status: DroneStatus;
 }
 
 export interface Drone {
-  _id: string;
+  _id: string; // Unique identifier for the drone
+  serialNumber: string;
   model: string;
-  operatorId: string; // Reference to Operator
-  authorizedZones: ZoneType[];
-  authorizedPeriods: AuthorizedPeriod[];
-}
-
-/**
- * Input interface for creating or updating a drone entity.
- *
- * @interface DroneInput
- * @property {string} model - The model name or identifier of the drone
- * @property {string} operatorId - Reference ID to the operator who owns/controls this drone
- * @property {ZoneType[]} authorizedZones - Array of zone types where this drone is authorized to operate
- * @property {AuthorizedPeriod[]} authorizedPeriods - Array of time periods when this drone is authorized to operate
- */
-export class DroneInput {
-  @ApiProperty()
-  model: string;
-  @ApiProperty()
-  operatorId: string; // Reference to Operator
-  @ApiProperty()
-  authorizedZones: ZoneType[];
-  @ApiProperty()
-  authorizedPeriods: AuthorizedPeriod[];
+  droneType: DroneType;
+  certHashes: string[];
+  permittedZones: ZoneType[];
+  ownerHistory: string[];
+  maintenanceHash: string;
+  status: DroneStatus;
 }
