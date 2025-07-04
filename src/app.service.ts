@@ -700,7 +700,7 @@ export class AppService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          droneID: locationUpdate.droneId.toString(),
+          droneID: locationUpdate.droneId,
           position: `lat:${locationUpdate.position.lat},lng:${locationUpdate.position.lon}`,
         }),
       });
