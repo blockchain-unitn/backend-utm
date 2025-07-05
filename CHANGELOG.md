@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Implemented zone boundaries and altitude checks using Turf.js for route validation
 - Added mock operator and drone creation endpoints and logic
 - Implemented simulation cron jobs for flight plan authorization and drone telemetry
+- Added `initializeMockZones` method to programmatically create 5 mock zones for testing
+- The simulation cron job now initializes mock zones before adding operators if none exist
 
 ### Changed
 - Changed the README content

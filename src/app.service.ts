@@ -665,6 +665,112 @@ export class AppService {
   }
 
   /**
+   * Initialize 5 different mock zones
+   * taking inspirations from these curls to understand how to create the zones
+   */
+  async initializeMockZones() {
+    const zones = [
+      {
+        name: 'Milano Urban Zone Lambrate',
+        zoneType: 1,
+        boundaries: [
+          { latitude: 45.49, longitude: 9.21 },
+          { latitude: 45.49, longitude: 9.24 },
+          { latitude: 45.47, longitude: 9.24 },
+          { latitude: 45.47, longitude: 9.21 },
+        ],
+        maxAltitude: 300,
+        minAltitude: 0,
+        description: 'Urban no-fly zone over Lambrate area',
+      },
+      {
+        name: 'Milano Hospital Zone San Paolo',
+        zoneType: 2,
+        boundaries: [
+          { latitude: 45.44, longitude: 9.14 },
+          { latitude: 45.44, longitude: 9.17 },
+          { latitude: 45.42, longitude: 9.17 },
+          { latitude: 45.42, longitude: 9.14 },
+        ],
+        maxAltitude: 300,
+        minAltitude: 0,
+        description: 'No-fly zone around San Paolo hospital area',
+      },
+      {
+        name: 'Milano Metropolitan No-Fly Zone',
+        zoneType: 1,
+        boundaries: [
+          { latitude: 45.5, longitude: 9.1 },
+          { latitude: 45.5, longitude: 9.2 },
+          { latitude: 45.4, longitude: 9.2 },
+          { latitude: 45.4, longitude: 9.1 },
+        ],
+        maxAltitude: 500,
+        minAltitude: 0,
+        description:
+          'Large no-fly zone covering the entire Milan metropolitan area',
+      },
+      {
+        name: 'Milano Restricted Zone Central Station',
+        zoneType: ZoneType.RESTRICTED,
+        boundaries: [
+          { latitude: 45.48, longitude: 9.2 },
+          { latitude: 45.48, longitude: 9.22 },
+          { latitude: 45.46, longitude: 9.22 },
+          { latitude: 45.46, longitude: 9.2 },
+        ],
+        maxAltitude: 200,
+        minAltitude: 0,
+        description: 'Restricted zone around Milano Central Station',
+      },
+      {
+        name: 'Milano Military Zone Sforza Castle',
+        zoneType: ZoneType.MILITARY,
+        boundaries: [
+          { latitude: 45.47, longitude: 9.18 },
+          { latitude: 45.47, longitude: 9.19 },
+          { latitude: 45.46, longitude: 9.19 },
+          { latitude: 45.46, longitude: 9.18 },
+        ],
+        maxAltitude: 150,
+        minAltitude: 0,
+        description:
+          'Military no-fly zone around the historical Sforza Castle area',
+      },
+    ];
+    const ENDPOINT_URL = this.configService.get<string>('ENDPOINT_URL');
+    this.logger.debug(`Initializing mock zones: ${JSON.stringify(zones)}`);
+    for await (const zone of zones) {
+      try {
+        const response = await fetch(`${ENDPOINT_URL}/api/zones/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(zone),
+        });
+        if (!response.ok) {
+          this.logger.error(
+            `Failed to initialize mock zones: ${response.statusText}`,
+          );
+          throw new Error('Failed to initialize mock zones');
+        }
+        const result = await response.json();
+        this.logger.log(
+          `Mock zone initialized successfully: ${JSON.stringify(result)}`,
+        );
+        this.logger.log(`Mock zones initialized successfully`);
+      } catch (error) {
+        this.logger.error(
+          `Error initializing mock zones: ${error.message}`,
+          error.stack,
+        );
+        throw new Error('Failed to initialize mock zones');
+      }
+    }
+  }
+
+  /**
    * Retrieves all mock drone data from the database.
    *
    * @returns {Array} An array of mock drone objects from the database
@@ -899,6 +1005,11 @@ export class AppService {
 
     // Step 1: Add a new operator
     if (this.database.operators.length === 0) {
+      this.logger.debug('adding zone limits to the mock database...');
+      await this.initializeMockZones();
+      this.logger.debug(
+        'No operators found in the mock database, adding a mock operator...',
+      );
       const operatorInput: OperatorInput = {
         name: 'Mock Operator',
         contact_email: 'mock.operator@example.com',
