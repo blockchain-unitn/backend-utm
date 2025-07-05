@@ -27,7 +27,7 @@ This service is part of the larger SkyLedger ecosystem and requires proper confi
 
 1. **Clone the repository**:
     ```bash
-    git clone https://github.com/your-org/backend-utm.git
+    git clone https://github.com/blockchain-unitn/backend-utm.git
     cd backend-utm
     ```
 
@@ -38,6 +38,8 @@ This service is part of the larger SkyLedger ecosystem and requires proper confi
 
 3. **Configure environment variables**:  
     Copy `.env.orig` to `.env` and update the values as needed for your environment.
+
+Make sure skyledger-backend is working properly on the 'ENDPOINT_URL.
 
 4. **Start the service**:
     ```bash
