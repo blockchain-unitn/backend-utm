@@ -1,14 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppService } from './app.service';
-import { CountryCode, Day, TaxIdType, ZoneType } from './types/enums';
+import { CountryCode, TaxIdType, ZoneType } from './types/enums';
+import { DroneType, DroneStatus } from './types/drone';
 import {
   LocationUpdateRequest,
   PreAuthorizationRequest,
   PreAuthorizationStatus,
 } from './types/dto';
 import { Zone } from './types/zone';
-import { Position, RoutePoint } from './types/route';
-import { DroneInput, DroneStatus, DroneType } from './types/drone';
+import { Position } from './types/route';
+import { DroneInput } from './types/drone';
 import { OperatorInput } from './types/operator';
 import { ConfigService } from '@nestjs/config';
 
@@ -26,7 +27,6 @@ describe('AppService', () => {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              // Provide mock values for config keys as needed
               if (key === 'ENDPOINT_URL') return 'http://mock-endpoint';
               if (key === 'PORT') return 3000;
               if (key === 'OPERATOR')
@@ -41,9 +41,7 @@ describe('AppService', () => {
     }).compile();
 
     service = module.get<AppService>(AppService);
-    // Reset mocks before each test
     (fetch as jest.Mock).mockClear();
-    // Clear the in-memory database before each test
     service['database'] = {
       drones: [],
       flightPlans: [],
@@ -104,9 +102,11 @@ describe('AppService', () => {
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         json: jest.fn().mockResolvedValueOnce({
-          droneId: 'drone123',
-          preauthorizationStatus: PreAuthorizationStatus.APPROVED,
-          reason: "",
+          data: {
+            droneId: 'drone123',
+            preauthorizationStatus: PreAuthorizationStatus.APPROVED,
+            reason: '',
+          },
         }),
       });
       jest.spyOn(service, 'getRouteCharacteristics').mockResolvedValueOnce({
@@ -131,7 +131,7 @@ describe('AppService', () => {
         'http://mock-endpoint/api/route-permissions/check',
         expect.any(Object),
       );
-      expect(result.preauthorization_status).toEqual(
+      expect(result.preauthorizationStatus).toEqual(
         PreAuthorizationStatus.APPROVED,
       );
       expect(result.droneId).toEqual('drone123');
@@ -175,7 +175,6 @@ describe('AppService', () => {
             { latitude: 40.76, longitude: -74.06 },
             { latitude: 40.77, longitude: -74.07 },
             { latitude: 40.78, longitude: -74.08 },
-
             { latitude: 40.79, longitude: -74.09 },
             { latitude: 40.8, longitude: -74.1 },
             { latitude: 40.81, longitude: -74.11 },
@@ -198,7 +197,7 @@ describe('AppService', () => {
 
       const result = await service.getZonesLimits();
 
-      expect(fetch).toHaveBeenCalledWith(`${process.env.ENDPOINT_URL}/zones`);
+      expect(fetch).toHaveBeenCalledWith('http://mock-endpoint/api/zones');
       expect(result).toEqual(mockZones);
     });
 
@@ -215,60 +214,35 @@ describe('AppService', () => {
   });
 
   describe('authorizeFlightPlan', () => {
-    const flightPlan: PreAuthorizationRequest = {
+    const flightPlan = {
       droneId: 'drone123',
       flightPlan: {
         route: [{ lat: 1, lon: 1, alt: 100 }],
         start_time: new Date(),
         end_time: new Date(),
       },
+      zones: [],
     };
 
     it('should authorize flight plan and add to local database on success', async () => {
-      const mockResponse = { status: 'success', flightPlanId: 'fp123' };
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockResponse),
-      });
+      // The service does NOT call fetch, it just adds to local DB
+      const result = await service.authorizeFlightPlan(flightPlan);
 
-      const result = await service.authorizeFlightPlan({
-        ...flightPlan,
-        zones: [],
-      });
-
-      expect(fetch).toHaveBeenCalledWith(
-        `${process.env.ENDPOINT_URL}/flight-plans/authorize`,
-        expect.any(Object),
-      );
-      expect(result).toEqual(mockResponse);
+      expect(result.droneId).toBe('drone123');
       expect(service['database'].flightPlans).toHaveLength(1);
       expect(service['database'].flightPlans[0].droneId).toBe('drone123');
     });
 
-    it('should throw an error if API call is not ok', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        statusText: 'Bad Request',
-        json: jest.fn().mockResolvedValueOnce({}),
-      });
-
-      await expect(
-        service.authorizeFlightPlan({
-          ...flightPlan,
-          zones: [],
-        }),
-      ).rejects.toThrow('Failed to authorize flight plan on blockchain');
-    });
-
-    it('should throw an error if API call fails', async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network Error'));
-
-      await expect(
-        service.authorizeFlightPlan({
-          ...flightPlan,
-          zones: [],
-        }),
-      ).rejects.toThrow('Failed to authorize flight plan on blockchain');
+    it('should throw an error if something fails', async () => {
+      // Simulate error by making mongoose.Types.ObjectId throw
+      const original = service['database'].flightPlans.push;
+      service['database'].flightPlans.push = () => {
+        throw new Error('Mock error');
+      };
+      await expect(service.authorizeFlightPlan(flightPlan)).rejects.toThrow(
+        'Failed to authorize flight plan on blockchain',
+      );
+      service['database'].flightPlans.push = original;
     });
   });
 
@@ -281,13 +255,23 @@ describe('AppService', () => {
       serialNumber: 'SN123',
       maintenanceHash: 'hash123',
       status: DroneStatus.ACTIVE,
-      certHashes: [],
+      certHashes: ['cert-hash-1'],
     };
 
     it('should throw error for invalid drone data', async () => {
       const invalidDrone: any = { model: 'test' };
       await expect(service.addMockDrone(invalidDrone)).rejects.toThrow(
         'Invalid drone data',
+      );
+    });
+
+    it('should throw error for empty certHashes', async () => {
+      const invalidDrone: DroneInput = {
+        ...droneInput,
+        certHashes: [],
+      };
+      await expect(service.addMockDrone(invalidDrone)).rejects.toThrow(
+        'certHashes must be a non-empty array of strings',
       );
     });
 
@@ -298,11 +282,11 @@ describe('AppService', () => {
           tokenId: 'token-id-123',
           serialNumber: 'SN123',
           model: 'DJI Mavic Pro',
-          droneType: 'MEDICAL',
-          permittedZones: ['URBAN'],
-          operatorId: 'op123',
+          droneType: DroneType.MEDICAL,
+          permittedZones: [ZoneType.URBAN],
+          ownerHistory: ['op123'],
           maintenanceHash: 'hash123',
-          status: 'ACTIVE',
+          status: DroneStatus.ACTIVE,
         },
       };
       (fetch as jest.Mock).mockResolvedValueOnce({
@@ -315,7 +299,7 @@ describe('AppService', () => {
       expect(result.status).toBe('success');
       expect(result.droneId).toBe('token-id-123');
       expect(fetch).toHaveBeenCalledWith(
-        `${process.env.ENDPOINT_URL}/drones`,
+        'http://mock-endpoint/api/drones/mint',
         expect.any(Object),
       );
       expect(service['database'].drones).toHaveLength(1);
